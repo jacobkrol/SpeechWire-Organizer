@@ -1,0 +1,131 @@
+
+body {
+	background: white;
+	color: #009;
+	font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	min-width: 250px;
+}
+
+table {
+	max-width: 500px;
+	margin: 15px auto;
+}
+
+table td {
+	align: center;
+}
+
+table.tool {
+	border: 2px solid #009;
+	border-collapse: collapse;
+}
+
+table.tool td {
+	border: 2px solid #009;
+}
+
+.publicschematic {
+    border-collapse: collapse;
+    font-size: 12px;
+    vertical-align: middle;
+    border: 2px solid #000099;
+}
+
+.publicschematicheader {
+    text-align: center;
+    font-weight: bold;
+    background-color: #000099;
+    color: white;
+    font-size: 14px;
+}
+
+.publicspeechschematicsectionname {
+    border-collapse: collapse;
+    text-align: center;
+    font-weight: bold;
+    background-color: LIGHTBLUE;
+    color: black;
+    font-size: 13px;
+    border-left: 2px solid #000099;
+    border-right: 2px solid #000099;
+}
+
+.publicspeechschematic {
+    border-collapse: collapse;
+    font-size: 12px;
+    vertical-align: middle;
+	color: black;
+    border-left: 2px solid #000099;
+    border-right: 2px solid #000099;
+}
+
+.content {
+	font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	color: black;
+}
+
+.content h3 {
+	margin: 0;
+	font-weight: bold;
+}
+
+p {
+	color: black;
+}
+
+.pagetitle {
+    color: #000099;
+    font-weight: bold;
+    font-size: 24px;
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+.pagesubtitle {
+    color: black;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+input {
+    font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    margin: 0px;
+}
+
+input[type="button"] {
+    -webkit-appearance: push-button;
+    user-select: none;
+    white-space: pre;
+    align-items: flex-start;
+    text-align: center;
+    cursor: default;
+    color: buttontext;
+    background-color: buttonface;
+    box-sizing: border-box;
+    padding: 1px 6px;
+    border-width: 2px;
+    border-style: outset;
+    border-color: buttonface;
+    border-image: initial;
+}
+
+input[type="button"]:active {
+    border-style: inset;
+}
+
+input[type="button"]:focus {
+    outline-offset: 0px;
+}
+
+.t-head {
+	font-weight: bold;
+	color: white;
+	background: #009;
+}
+
+#foot {
+
+	color: gray;
+	font-style: italic;
+}
