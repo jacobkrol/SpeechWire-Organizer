@@ -42,7 +42,7 @@ function getSchems(url) {
             .then((page) => {
                 let reg1 = /<table class=['"]publicschematic['"].+?>.+?<\/table>/,
             		round1 = page.match(reg1)[0];
-            	let reg2 = /(?<=<td class="publicspeechschematic">(?!\d))(\w+\s*'*){2,}?(?=<\/td>)/g,
+            	let reg2 = /(?<=<td class="publicspeechschematic">(?!\d))(\w+\s*'*\-*){2,}?(?=<\/td>)/g,
             		names = round1.match(reg2);
             	let reg3 = /(?<=<p class=("|')pagesubtitle("|')>)(\w|\s)+?(?=<\/p>)/,
             		title = page.match(reg3)[0];
@@ -76,8 +76,8 @@ function printByCompetitor(schems) {
                   name = schems[i].names[j].match(getCompRegex)[0];
             if(name) {
                 if(name.match(/\sand\s/)) {
-                    const name1 = name.match(/(\w+\s*'*)+?(?=\sand)/)[0],
-                          name2 = name.match(/(?<=\sand\s)(\w+\s*'*)+/)[0];
+                    const name1 = name.match(/(\w+\s*'*\-*)+?(?=\sand)/)[0],
+                          name2 = name.match(/(?<=\sand\s)(\w+\s*'*\-*)+/)[0];
                     console.log("duo with",name1,"and",name2);
                     for(let namei of [name1,name2]) {
                         let exists = false;
@@ -135,8 +135,8 @@ function printBySchool(schems) {
                     if(schools[k].name === schoolCode) {
                         const comp = schems[i].names[j].match(getCompRegex)[0];
                         if(comp.match(/\sand\s/)) {
-                            const comp1 = comp.match(/(\w+\s*'*)+?(?=\sand)/)[0],
-                                  comp2 = comp.match(/(?<=\sand\s)(\w+\s*'*)+/)[0];
+                            const comp1 = comp.match(/(\w+\s*'*\-*)+?(?=\sand)/)[0],
+                                  comp2 = comp.match(/(?<=\sand\s)(\w+\s*'*\-*)+/)[0];
                             // console.log("found duo with",comp1,"and",comp2);
                             for(let compi of [comp1,comp2]) {
                                 if(schools[k].competitors.includes(compi)) {
@@ -187,7 +187,7 @@ function rankFinalists(schems) {
     call(url)
         .then((page) => {
             const getPlacesRegex = /(?<=>)([1-6]|Fin\.)(?=<)/g,
-                  getCompsRegex = /(?<=compid\=[0-9]+\&seasonid\=[0-9]+['"]>)[a-zA-Z'\s]+/g,
+                  getCompsRegex = /(?<=compid\=[0-9]+\&seasonid\=[0-9]+['"]>)[a-zA-Z'\s\-]+/g,
                   getEventsRegex = /(?<=<p>(\s)*<strong>)(?<event>.+?)(?=<\/strong>)/g;
 
             let places = page.match(getPlacesRegex),
