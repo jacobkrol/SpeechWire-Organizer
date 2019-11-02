@@ -180,6 +180,123 @@ function printBySchool(schems) {
     $('#output').html(text);
 }
 
+function printBySchoolComplex(schems) {
+    let competitors = [];
+    for(let i=0; i<schems.length; ++i) {
+        for(let j=0; j<schems[i].names.length; ++j) {
+            const getCompRegex = /(?<=[A-Z]+\d+\s).+/,
+                  name = schems[i].names[j].match(getCompRegex)[0];
+            if(name) {
+                if(name.match(/\sand\s/)) {
+                    const name1 = name.match(/(\w+\s*'*\-*)+?(?=\sand)/)[0],
+                          name2 = name.match(/(?<=\sand\s)(\w+\s*'*\-*)+/)[0];
+                    for(let namei of [name1,name2]) {
+                        let exists = false;
+                        for(let k=0; k<competitors.length; ++k) {
+                            if(competitors[k].name === namei) {
+                                competitors[k].events.push(schems[i].title);
+                                exists = true;
+                            }
+                        }
+                        if(!exists) {
+                            competitors.push({name:namei,events:[schems[i].title]});
+                        }
+                    }
+                } else {
+                    let exists = false;
+                    for(let k=0; k<competitors.length; ++k) {
+                        if(competitors[k].name === name) {
+                            competitors[k].events.push(schems[i].title);
+                            exists = true;
+                        }
+                    }
+                    if(!exists) {
+                        competitors.push({name:name,events:[schems[i].title]});
+                    }
+                }
+            } else {
+                throw Error("Error finding competitor name");
+            }
+        }
+    }
+
+
+    let schools = [];
+    // console.log(schems);
+    for(let i=0; i<schems.length; ++i) {
+        for(let j=0; j<schems[i].names.length; ++j) {
+            const getCodeRegex = /[A-Z]+(?=\d+)/,
+                  getCompRegex = /(?<=[A-Z]+\d+\s).+/;
+            // console.log(i,j,schems[i].names[j],"?");
+            let schoolCode = schems[i].names[j].match(getCodeRegex)[0];
+            if(schoolCode) {
+                let exists = false;
+                for(let k=0; k<schools.length; ++k) {
+                    if(schools[k].name === schoolCode) {
+                        const comp = schems[i].names[j].match(getCompRegex)[0];
+                        if(comp.match(/\sand\s/)) {
+                            const comp1 = comp.match(/(\w+\s*'*\-*)+?(?=\sand)/)[0],
+                                  comp2 = comp.match(/(?<=\sand\s)(\w+\s*'*\-*)+/)[0];
+                            // console.log("found duo with",comp1,"and",comp2);
+                            for(let compi of [comp1,comp2]) {
+                                if(schools[k].competitors.includes(compi)) {
+                                    // console.log(compi,"already in school",schoolCode);
+                                } else {
+                                    // console.log("adding",compi,"to school",schoolCode);
+                                    schools[k].competitors.push(compi);
+                                }
+                            }
+                        } else {
+                            if(schools[k].competitors.includes(comp)) {
+                                // console.log(comp,"already in school",schoolCode);
+                            } else {
+                                // console.log("adding",comp,"to school",schoolCode);
+                                schools[k].competitors.push(comp);
+                            }
+                        }
+                        exists = true;
+                    }
+                }
+                if(!exists) {
+                    const comp = schems[i].names[j].match(getCompRegex)[0];
+                    // console.log("creating school",schoolCode);
+                    // console.log("adding",comp,"to school",schoolCode);
+                    schools.push({name:schoolCode,count:0,competitors:[comp]});
+                }
+            } else {
+                throw Error("Error finding school code");
+            }
+        }
+    }
+
+
+    for(let i=0; i<schools.length; ++i) {
+        let sum = 0;
+        for(let j=0; j<schools[i].competitors.length; ++j) {
+            for(let k=0; k<competitors.length; ++k) {
+                if(competitors[k].name === schools[i].competitors[j]) {
+                    schools[i].competitors[j] = {name:schools[i].competitors[j],count:competitors[k].events.length};
+                    sum += competitors[k].events.length;
+                    break;
+                }
+            }
+        }
+        schools[i].count = sum;
+    }
+
+
+    let text = "";
+    for(let i=0; i<schools.length; ++i) {
+        text += "<table class='publicschematic' width='100%'><tr align='center' class='publicschematicheader'><td style='border-bottom: 3px solid #009'>"+schools[i].name+" ("+schools[i].count+" entries)"+"</td></tr>";
+        for(let j=0; j<schools[i].competitors.length; ++j) {
+            text += "<tr align='center'><td class='publicspeechschematic'>"+schools[i].competitors[j].name+" ("+schools[i].competitors[j].count+")"+"</td></tr>";
+        }
+        text += "</table>"
+    }
+    console.log("printed");
+    $('#output').html(text);
+}
+
 function rankFinalists(schems) {
     const tournID = window.location.search.slice(4),
           url = "http://www.speechwire.com/r-results.php?tournid="+tournID+"&groupingid=0&round=F";
@@ -250,6 +367,10 @@ function startHome(schems) {
         $('#printbyschool').on('click', () => {
             console.log("click on school");
             printBySchool(schems);
+        });
+        $('#printbyschoolcomplex').on('click', () => {
+            console.log("click on school complex");
+            printBySchoolComplex(schems);
         });
         $('#rankfinalists').on('click', () => {
             console.log("click on rank finalists");
