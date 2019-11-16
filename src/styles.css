@@ -122,6 +122,12 @@ input[type="button"]:focus {
     outline-offset: 0px;
 }
 
+select {
+	font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	margin: 0px;
+}
+
 .t-head {
 	font-weight: bold;
 	color: white;

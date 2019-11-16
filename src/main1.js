@@ -372,7 +372,6 @@ function rankFinalists(schems) {
                 for(let j=0; j<schems[i].names.length; ++j) {
                     let final = getPlacement({name:schems[i].names[j],event:schems[i].title},results),
                         entry = final ? schems[i].names[j]+" <b>("+final+")" : schems[i].names[j];
-                    console.log("final:",final,"entry:",entry);
                     text += "<tr align='center'><td class='publicspeechschematic'>"+entry+"</td></tr>";
                 }
                 text += "</table>"
@@ -444,7 +443,6 @@ function getFlightSchedule(fullSchems) {
             flightTimes.push(getTimeValue(fullSchems[i].time));
         }
     }
-    console.log(flightTimes);
 
     return flights;
 }
@@ -461,7 +459,7 @@ function eventCrossEntries(schems) {
                 schemPromises.push(getFullSchems(url));
             }
             Promise.all(schemPromises).then((fullSchems) => {
-                handleCrossEntries(fullSchems,schems);
+                prepareCrossEntries(fullSchems,schems);
             });
         })
         .catch((err) => {
@@ -482,12 +480,17 @@ function getCrossEntryText(flights,title,competitors,name) {
                     if(flights[f][e] === title) {
                         //initialize counter
                         let cross = 0;
-                        //loop through current flight events
-                        for(let e2=0; e2<flights[f].length; ++e2) {
-                            //skip same event
-                            if(flights[f][e2] === title) continue;
-                            //add to count if cross entered
-                            cross += competitors[i].events.includes(flights[f][e2]) ? 1 : 0;
+                        //set flag for encountering first instance of same event
+                        let thisEventFlag = false;
+                        //loop through competitor's events
+                        for(let e2=0; e2<competitors[i].events.length; ++e2) {
+                            //skip first time seeing the same event
+                            if(competitors[i].events[e2] === title && !thisEventFlag) {
+                                thisEventFlag = true;
+                                continue;
+                            }
+                            //add to count if cross entered in flight
+                            cross += flights[f].includes(competitors[i].events[e2]) ? 1 : 0;
                         }
 
                         //convert cross count to text
@@ -515,17 +518,15 @@ function getCrossEntryText(flights,title,competitors,name) {
     }
 }
 
-function handleCrossEntries(fullSchems,schems) {
+function prepareCrossEntries(fullSchems,schems) {
     //get additional flight and competitor info
     const flights = getFlightSchedule(fullSchems),
           competitors = getCompetitorsByEvents(schems);
-    console.log(fullSchems,flights);
-    //initialize text to blank
-    let text = "";
+    let schemTables = [];
     //for each event at the tournament...
     for(let e=0; e<fullSchems.length; e++) {
         //append event title
-        text += "<p class='pagesubtitle'>"+fullSchems[e].title+"</p>";
+        text = "<p class='pagesubtitle'>"+fullSchems[e].title+"</p>";
         //for each round of event, e...
         for(let r=0; r<fullSchems[e].rounds.length; ++r) {
             let maxwidth = fullSchems[e].sections*200;
@@ -537,9 +538,21 @@ function handleCrossEntries(fullSchems,schems) {
             text += "<tr align='center'>";
             //for each competitor in round, r...
             for(let c=0; c<fullSchems[e].rounds[r].length; ++c) {
+                //check name type
                 if(fullSchems[e].rounds[r][c] === ' ') {
+                    //if blank, enter blank entry
                     text += "<td class='publicspeechschematic'> </td>";
+                } else if(fullSchems[e].rounds[r][c].match(/\sand\s/)){
+                    //if duo, verify for each name
+                    let code = fullSchems[e].rounds[r][c].match(/[A-Z]*\d+(?=\s)/)[0];
+                        name1 = fullSchems[e].rounds[r][c].match(/(?<=[A-Z]+\d+\s).+(?=\sand)/)[0],
+                        name2 = fullSchems[e].rounds[r][c].match(/(?<=\sand\s)(\w+\s*'*\-*\.*)+/)[0],
+                        title = fullSchems[e].title,
+                        eventCE1 = getCrossEntryText(flights,title,competitors,name1);
+                        eventCE2 = getCrossEntryText(flights,title,competitors,name2);
+                    text += "<td class='publicspeechschematic'>"+code+" "+name1+eventCE1+" and "+name2+eventCE2+"</td>";
                 } else {
+                    //if not duo, add competitor entry
                     let name = fullSchems[e].rounds[r][c].match(/(?<=[A-Z]+\d+\s).+/)[0],
                         title = fullSchems[e].title,
                         eventCE = getCrossEntryText(flights,title,competitors,name);
@@ -563,15 +576,27 @@ function handleCrossEntries(fullSchems,schems) {
             //close out table html element
             text += "</table>"
         }
+        schemTables.push({title:fullSchems[e].title,schems:text});
     }
 
+    console.log("prepped");
+    handleCrossEntries(schemTables);
+}
 
-    console.log("printed");
-    $('#output').html(text);
+function handleCrossEntries(schemTables) {
+    let header = "<p>Select what you would like to view: <select id='groupingid' name='groupingid'>";
+    for(let i=0; i<schemTables.length; ++i) {
+        header += "<option value='"+i+"'>"+schemTables[i].title+"</option>";
+    }
+    header += "</select> <input id='view-postings-submit' type='button' value='View postings' /></p><div id='output-detail'></div>";
+    $('#output').html(header);
+    $('#view-postings-submit').on('click', () => {
+        let selected = $('#groupingid').children('option:selected').val();
+        $('#output-detail').html(schemTables[selected].schems);
+    });
 }
 
 function getPlacement(comp,results) {
-    console.log("checking for",comp.name.match(/(?<=[A-Z]+\d+\s).+/)[0],"in",comp.event,"using results",results);
     for(let item of results) {
         if(item.name === comp.name.match(/(?<=[A-Z]+\d+\s).+/)[0] && item.event === comp.event) {
             return item.place;
