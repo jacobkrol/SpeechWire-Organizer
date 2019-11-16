@@ -11,6 +11,10 @@ table {
 	margin: 15px auto;
 }
 
+table.wider {
+	max-width: none !important;
+}
+
 table td {
 	align: center;
 }
