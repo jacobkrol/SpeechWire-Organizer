@@ -100,17 +100,11 @@ function getFullSchems(url) {
 
                 //organize names for each round, r
                 for(let r=0; r<rounds.length; r++) {
-
-                    //set up current round
-                    let names = rounds[r].match(/(?<=<td class="publicspeechschematic">(?!\d))([\w+\s*'*\-*\.*]{2,}|\s)?(?=<\/td>)/g); //pull names for current round, r
-                        sections = new Array(numSections).fill([]); //initialize empty sections array
-                    if(r===rounds.length-1 && skipFinalRound) break; // leave loop if reaching 'final round' posting
-
-                    //collate schematics for current round, r
-                    // for(let s=0; s<numSections; ++s) {
-                    //     sections[s] = names.filter(n => names.indexOf(n)%numSections===s && n!==' ');
-                    // }
-                    // schems.push(sections); //push organized round data
+                    //pull names for current round, r
+                    let names = rounds[r].match(/(?<=<td class="publicspeechschematic">(?!\d))([\w+\s*'*\-*\.*]{2,}|\s)?(?=<\/td>)/g);
+                    // leave loop if reaching 'final round' posting
+                    if(r===rounds.length-1 && skipFinalRound) break;
+                    //push names to schematics array
                     schems.push(names);
                 }
                 resolve({title:title,time:time,sections:numSections,rounds:schems}); //send final data object
@@ -123,40 +117,61 @@ function getFullSchems(url) {
 }
 
 function getCompetitorsByEvents(schems) {
+    //initialize empty competitors array
     let competitors = [];
+    //for each event in schems...
     for(let i=0; i<schems.length; ++i) {
+        //for each competitor in this event...
         for(let j=0; j<schems[i].names.length; ++j) {
+            //pull competitor name
             const getCompRegex = /(?<=[A-Z]+\d+\s).+/,
                   name = schems[i].names[j].match(getCompRegex)[0];
             if(name) {
+                //if in a duo...
                 if(name.match(/\sand\s/)) {
+                    //get both names and perform action for each competitor
                     const name1 = name.match(/(\w+\s*'*\-*\.*)+?(?=\sand)/)[0],
                           name2 = name.match(/(?<=\sand\s)(\w+\s*'*\-*\.*)+/)[0];
                     for(let namei of [name1,name2]) {
+                        //mark competitor found flag to false as default
                         let exists = false;
+                        //loop through currently indexed competitors
                         for(let k=0; k<competitors.length; ++k) {
+                            //if competitor already indexed
                             if(competitors[k].name === namei) {
+                                //push event to competitor
                                 competitors[k].events.push(schems[i].title);
+                                //mark flag as found
                                 exists = true;
                             }
                         }
+                        //if competitor is new
                         if(!exists) {
+                            //create new competitor instance
                             competitors.push({name:namei,events:[schems[i].title]});
                         }
                     }
                 } else {
+                    //mark competitor found flag to false as default
                     let exists = false;
+                    //loop through currently indexed competitors
                     for(let k=0; k<competitors.length; ++k) {
+                        //if competitor already indexed
                         if(competitors[k].name === name) {
+                            //push event to competitor
                             competitors[k].events.push(schems[i].title);
+                            //mark flag as found
                             exists = true;
                         }
                     }
+                    //if competitor is new
                     if(!exists) {
+                        //create new competitor instance
                         competitors.push({name:name,events:[schems[i].title]});
                     }
                 }
             } else {
+                //push error if name not found through regex
                 throw Error("Error finding competitor name");
             }
         }
@@ -186,60 +201,75 @@ function printByEvent(schems) {
 }
 
 function printByCompetitor(schems) {
+    //pull competitor array
     competitors = getCompetitorsByEvents(schems);
+    //initialize empty text element
     let text = "";
+    //loop through competitors
     for(let i=0; i<competitors.length; ++i) {
+        //start a table for each competitor
         text += "<table class='publicschematic' width='100%'><tr align='center' class='publicschematicheader'><td style='border-bottom: 3px solid #009'>"+competitors[i].name+"</td></tr>";
+        //add each event to the table
         for(let j=0; j<competitors[i].events.length; ++j) {
             text += "<tr align='center'><td class='publicspeechschematic'>"+competitors[i].events[j]+"</td></tr>";
         }
+        //close out the table html element
         text += "</table>"
     }
+    //update log and document
     console.log("printed");
     $('#output').html(text);
 }
 
 function printBySchool(schems) {
+    //initialize empty schools array
     let schools = [];
-    // console.log(schems);
+    //for each event...
     for(let i=0; i<schems.length; ++i) {
+        //for each competitor in the event
         for(let j=0; j<schems[i].names.length; ++j) {
+            //pull name and code
             const getCodeRegex = /[A-Z]+(?=\d+)/,
                   getCompRegex = /(?<=[A-Z]+\d+\s).+/;
-            // console.log(i,j,schems[i].names[j],"?");
             let schoolCode = schems[i].names[j].match(getCodeRegex)[0];
             if(schoolCode) {
+                //mark school exists flag to false as default
                 let exists = false;
+                //loop through indexed schools
                 for(let k=0; k<schools.length; ++k) {
+                    //if code is already indexed
                     if(schools[k].name === schoolCode) {
+                        //pull competitor name
                         const comp = schems[i].names[j].match(getCompRegex)[0];
+                        //if a duo...
                         if(comp.match(/\sand\s/)) {
+                            //pull individual competitor names from duo
                             const comp1 = comp.match(/(\w+\s*'*\-*\.*)+?(?=\sand)/)[0],
                                   comp2 = comp.match(/(?<=\sand\s)(\w+\s*'*\-*\.*)+/)[0];
-                            // console.log("found duo with",comp1,"and",comp2);
+                            //for each of competitors in duo
                             for(let compi of [comp1,comp2]) {
-                                if(schools[k].competitors.includes(compi)) {
-                                    // console.log(compi,"already in school",schoolCode);
-                                } else {
-                                    // console.log("adding",compi,"to school",schoolCode);
+                                //if not in school listing yet
+                                if(!schools[k].competitors.includes(compi)) {
+                                    //push competitor to school
                                     schools[k].competitors.push(compi);
                                 }
                             }
                         } else {
-                            if(schools[k].competitors.includes(comp)) {
-                                // console.log(comp,"already in school",schoolCode);
-                            } else {
-                                // console.log("adding",comp,"to school",schoolCode);
+                            //if not in school listing yet
+                            if(!schools[k].competitors.includes(comp)) {
+                                //push competitor to school
                                 schools[k].competitors.push(comp);
                             }
                         }
+                        //mark school exists flag to true
                         exists = true;
                     }
                 }
+                //if school is not yet indexed
                 if(!exists) {
+                    //pull competitor name
                     const comp = schems[i].names[j].match(getCompRegex)[0];
-                    // console.log("creating school",schoolCode);
-                    // console.log("adding",comp,"to school",schoolCode);
+                    //create new school instance
                     schools.push({name:schoolCode,competitors:[comp]});
                 }
             } else {
@@ -247,14 +277,22 @@ function printBySchool(schems) {
             }
         }
     }
+    //initialize empty text element
     let text = "";
+    //for each school found...
     for(let i=0; i<schools.length; ++i) {
+        //start a new table for each school
         text += "<table class='publicschematic' width='100%'><tr align='center' class='publicschematicheader'><td style='border-bottom: 3px solid #009'>"+schools[i].name+"</td></tr>";
+        //for each competitor at the school...
         for(let j=0; j<schools[i].competitors.length; ++j) {
+            //append the competitor to the school's table
             text += "<tr align='center'><td class='publicspeechschematic'>"+schools[i].competitors[j]+"</td></tr>";
         }
+        //close out the table html element
         text += "</table>"
     }
+
+    //print to log and document
     console.log("printed");
     $('#output').html(text);
 }
@@ -264,12 +302,10 @@ function printBySchoolComplex(schems) {
     competitors = getCompetitorsByEvents(schems);
 
     let schools = [];
-    // console.log(schems);
     for(let i=0; i<schems.length; ++i) {
         for(let j=0; j<schems[i].names.length; ++j) {
             const getCodeRegex = /[A-Z]+(?=\d+)/,
                   getCompRegex = /(?<=[A-Z]+\d+\s).+/;
-            // console.log(i,j,schems[i].names[j],"?");
             let schoolCode = schems[i].names[j].match(getCodeRegex)[0];
             if(schoolCode) {
                 let exists = false;
@@ -279,20 +315,13 @@ function printBySchoolComplex(schems) {
                         if(comp.match(/\sand\s/)) {
                             const comp1 = comp.match(/(\w+\s*'*\-*\.*)+?(?=\sand)/)[0],
                                   comp2 = comp.match(/(?<=\sand\s)(\w+\s*'*\-*\.*)+/)[0];
-                            // console.log("found duo with",comp1,"and",comp2);
                             for(let compi of [comp1,comp2]) {
-                                if(schools[k].competitors.includes(compi)) {
-                                    // console.log(compi,"already in school",schoolCode);
-                                } else {
-                                    // console.log("adding",compi,"to school",schoolCode);
+                                if(!schools[k].competitors.includes(compi)) {
                                     schools[k].competitors.push(compi);
                                 }
                             }
                         } else {
-                            if(schools[k].competitors.includes(comp)) {
-                                // console.log(comp,"already in school",schoolCode);
-                            } else {
-                                // console.log("adding",comp,"to school",schoolCode);
+                            if(!schools[k].competitors.includes(comp)) {
                                 schools[k].competitors.push(comp);
                             }
                         }
@@ -301,8 +330,6 @@ function printBySchoolComplex(schems) {
                 }
                 if(!exists) {
                     const comp = schems[i].names[j].match(getCompRegex)[0];
-                    // console.log("creating school",schoolCode);
-                    // console.log("adding",comp,"to school",schoolCode);
                     schools.push({name:schoolCode,count:0,competitors:[comp]});
                 }
             } else {
