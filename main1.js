@@ -75,6 +75,7 @@ function getSchems(url) {
             })
             .catch((err) => {
                 console.log(err);
+                resolve({names:[],title:""});
             });
     });
 }
@@ -112,6 +113,7 @@ function getFullSchems(url) {
             })
             .catch((err) => {
                 console.log(err);
+                resolve({title:"",time:"0:00 AM",sections:0,rounds:[]})
             });
     });
 }
@@ -632,6 +634,14 @@ function getPlacement(comp,results) {
     return false;
 }
 
+function generateJudgeDanceCards() {
+
+}
+
+function generateCompetitorDanceCards() {
+
+}
+
 function startHome(schems) {
     $('body').load('home.html', () => {
         $('#printbyevent').on('click', () => {
@@ -657,6 +667,14 @@ function startHome(schems) {
         $('#crossentries').on('click', () => {
             console.log("click on cross entries");
             eventCrossEntries(schems);
+        });
+        $('#judgedance').on('click', () => {
+            console.log("click on judge dance");
+            generateJudgeDanceCards();
+        });
+        $('#competitordance').on('click', () => {
+            console.log("click on competitor dance");
+            generateCompetitorDanceCards();
         });
     });
 
