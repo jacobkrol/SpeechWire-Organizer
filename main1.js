@@ -21,7 +21,7 @@ function getEventVals(tournID) {
 
     return new Promise((resolve, reject) => {
         //define url and regex for ajax request
-        const url = "https://www.speechwire.com/c-postings-schem.php?tournid="+tournID,
+        const url = "https://cors-anywhere.herokuapp.com/https://www.speechwire.com/c-postings-schem.php?tournid="+tournID,
               eventValsRegex = /(?<=<option value=['"])\d+(?=['"])/g;
 
         //make call to tournament schem home page
@@ -40,7 +40,7 @@ function getEventNames(tournID) {
 
     return new Promise((resolve, reject) => {
         //define url and regex for ajax request
-        const url = "https://www.speechwire.com/c-postings-schem.php?tournid="+tournID,
+        const url = "https://cors-anywhere.herokuapp.com/https://www.speechwire.com/c-postings-schem.php?tournid="+tournID,
               eventNamesRegex = /(?<=<option value=['"]\d+['"]>)[\w\s]+?(?=<)/g;
 
         //make call to tournament schem home page
@@ -370,7 +370,7 @@ function printBySchoolComplex(schems) {
 
 function rankFinalists(schems) {
     const tournID = window.location.search.slice(4),
-          url = "http://www.speechwire.com/r-results.php?tournid="+tournID+"&groupingid=0&round=F";
+          url = "https://cors-anywhere.herokuapp.com/http://www.speechwire.com/r-results.php?tournid="+tournID+"&groupingid=0&round=F";
     $('#output').html('<p>Retreiving additional information. Please be patient...</p>');
     call(url)
         .then((page) => {
@@ -484,7 +484,7 @@ function eventCrossEntries(schems) {
         .then((eventVals) => {
             let schemPromises = [];
             for(let i=0; i<eventVals.length; ++i) {
-                const url = "https://www.speechwire.com/c-postings-schem.php?groupingid="+eventVals[i]+"&Submit=View+postings&tournid="+tournID;
+                const url = "https://cors-anywhere.herokuapp.com/https://www.speechwire.com/c-postings-schem.php?groupingid="+eventVals[i]+"&Submit=View+postings&tournid="+tournID;
                 schemPromises.push(getFullSchems(url));
             }
             Promise.all(schemPromises).then((fullSchems) => {
@@ -688,7 +688,7 @@ function main() {
         .then((eventVals) => {
             let schemPromises = [];
             for(let i=0; i<eventVals.length; ++i) {
-                const url = "https://www.speechwire.com/c-postings-schem.php?groupingid="+eventVals[i]+"&Submit=View+postings&tournid="+tournID;
+                const url = "https://cors-anywhere.herokuapp.com/https://www.speechwire.com/c-postings-schem.php?groupingid="+eventVals[i]+"&Submit=View+postings&tournid="+tournID;
                 schemPromises.push(getSchems(url));
             }
             Promise.all(schemPromises).then((schems) => {
